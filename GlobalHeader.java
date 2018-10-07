@@ -39,8 +39,8 @@ public class GlobalHeader {
         this.version_minor = Arrays.copyOfRange(this.header, 6, 8);
         
         if(!ordering) {
-            this.reverse(this.version_major);
-            this.reverse(this.version_minor);
+            Wiresharklike.reverse(this.version_major);
+            Wiresharklike.reverse(this.version_minor);
         }
 
         if(Arrays.equals(this.version_major, this.major) && Arrays.equals(this.version_minor, this.minor)) {
@@ -48,21 +48,6 @@ public class GlobalHeader {
         }
         else {            
             throw new PcapException("Version not supported.");
-        }
-    }
-
-    public void printHeaderBytes() {
-        for (byte b : this.header) {
-            System.out.format("%02X ", b);
-        }
-        System.out.println();
-    }
-
-    public void reverse(byte[] array) {
-        for(int i=0; i<array.length/2; i++) {
-            byte tmp = array[i];
-            array[i] = array[array.length - i - 1];
-            array[array.length - i - 1] = tmp;
         }
     }
 }

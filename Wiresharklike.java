@@ -56,4 +56,30 @@ public class Wiresharklike {
             System.exit(-1);
         }
     }
+
+    /* util functions */
+
+    public static void reverse(byte[] array) {
+        for(int i=0; i<array.length/2; i++) {
+            byte tmp = array[i];
+            array[i] = array[array.length - i - 1];
+            array[array.length - i - 1] = tmp;
+        }
+    }    
+
+    public static void printBytes(byte[] array) {
+        for (byte b : array) {
+            System.out.format("%02X ", b);
+        }
+        System.out.println();
+    }
+
+    public static int bytesToInt(byte[] bytes) {
+        int v = 0;
+        for(int i=0; i<bytes.length; i++) {
+            v = v << 8;
+            v = v | (bytes[i] & 0xFF);
+        }
+        return v;
+    }
 }

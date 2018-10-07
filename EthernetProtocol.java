@@ -2,17 +2,18 @@
 import java.lang.String;
 import java.util.Arrays;
 
-public class Ethernetx {
+public class EthernetProtocol {
 
-    private byte[] bytes;
+    private byte[] data;
+
     private String destination;
     private String source;
-    private String protocol;
+    private Protocol protocol;
 
     private final byte[] ipv4 = {(byte)0x08, (byte)0x00};
 
-    public Ethernetx(byte[] bytes) {
-        this.bytes = bytes;
+    public EthernetProtocol(byte[] bytes) {
+        this.data = bytes;
     }
 
     public void parse() {
@@ -22,7 +23,7 @@ public class Ethernetx {
     }
 
     public String parseDestination() {
-        byte[] dst = Arrays.copyOfRange(this.bytes, 0, 6);        
+        byte[] dst = Arrays.copyOfRange(this.data, 0, 6);        
         String destination = "";
         for(int i=0; i<6; i++) {
             destination += String.format("%02X:", dst[i]);
@@ -32,7 +33,7 @@ public class Ethernetx {
     }
 
     public String parseSource() {
-        byte[] src = Arrays.copyOfRange(this.bytes, 6, 12);        
+        byte[] src = Arrays.copyOfRange(this.data, 6, 12);        
         String source = "";
         for(int i=0; i<6; i++) {
             source += String.format("%02X:", src[i]);
@@ -41,21 +42,21 @@ public class Ethernetx {
         return source;
     }
 
-    public String parseProtocol() {
-        byte[] prc = Arrays.copyOfRange(this.bytes, 12, 14);
-        String protocol = "";
+    public Protocol parseProtocol() {
+        byte[] prc = Arrays.copyOfRange(this.data, 12, 14);
+        Protocol protocol;
         if(Arrays.equals(prc, this.ipv4)) {
-            protocol = "IPv4";
+            protocol = Protocol.IPv4;
         }
         else {
-            protocol = "unknown";
+            protocol = Protocol.Unknown;
         }
         return protocol;
     }
 
     public void print() {
-        System.out.println("Destination: \t" + this.destination);
-        System.out.println("Source: \t" + this.source);
-        System.out.println("Protocol: \t" + this.protocol);
+        System.out.println("\tDestination: \t" + this.destination);
+        System.out.println("\tSource: \t" + this.source);
+        System.out.println("\tProtocol: \t" + this.protocol);
     }
 }

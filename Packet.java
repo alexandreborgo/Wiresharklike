@@ -2,15 +2,19 @@ import java.util.Arrays;
 
 public class Packet {
     /* 128b = 16B */
+
+    private int dataSize;
+
+    /* raw information */
     private byte[] header;
     private byte[] data;
-    private int dataSize;
     private byte[] ts_sec;         /* 32b timestamp seconds */
     private byte[] ts_usec;        /* 32b timestamp microseconds */
     private byte[] incl_len;       /* 32b number of octets of packet saved in file */
     private byte[] orig_len;       /* 32b actual length of packet */
 
-    private Ethernetx ethernet;
+    private EthernetProtocol ethernet;
+    private InternetProtocol internet;
 
     public Packet(byte[] bytes) {
         this.header = bytes;
@@ -19,29 +23,12 @@ public class Packet {
         this.incl_len = Arrays.copyOfRange(this.header, 8, 12);
         this.orig_len = Arrays.copyOfRange(this.header, 12, 16);
         
-        this.reverse(this.incl_len);
-        this.dataSize = this.bytesToInt(this.incl_len);
+        Wiresharklike.reverse(this.incl_len);
+        this.dataSize = Wiresharklike.bytesToInt(this.incl_len);
     }
 
     public int getDataSize() {
         return this.dataSize;
-    }
-
-    public void reverse(byte[] array) {
-        for(int i=0; i<array.length/2; i++) {
-            byte tmp = array[i];
-            array[i] = array[array.length - i - 1];
-            array[array.length - i - 1] = tmp;
-        }
-    }
-
-    public int bytesToInt(byte[] bytes) {
-        int v = 0;
-        for(int i=0; i<bytes.length; i++) {
-            v = v << 8;
-            v = v | (bytes[i] & 0xFF);
-        }
-        return v;
     }
 
     public void setData(byte[] bytes) {
@@ -49,12 +36,17 @@ public class Packet {
     }
 
     public void print() {
+        System.out.println("Ethernet: ");
         this.ethernet.print();
-        System.out.println("1 packet");
+        System.out.println("Internet Protocol: ");
+        this.internet.print();
+        System.out.println();
     }
 
     public void parse() {
-        this.ethernet = new Ethernetx(Arrays.copyOfRange(this.data, 0, 14));
+        this.ethernet = new EthernetProtocol(Arrays.copyOfRange(this.data, 0, 14));
         this.ethernet.parse();
+        this.internet = new InternetProtocol(Arrays.copyOfRange(this.data, 14, 34));
+        this.internet.parse();
     }
 }
