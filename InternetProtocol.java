@@ -1,9 +1,7 @@
 
 import java.util.Arrays;
 
-public class InternetProtocol {
-
-    private byte[] data;
+public class InternetProtocol extends Protocolx {
     private int length;
 
     private Protocol protocol;
@@ -13,7 +11,7 @@ public class InternetProtocol {
     private final byte[] tcp = {(byte)0x06};
 
     public InternetProtocol(byte[] bytes) {
-        this.data = bytes;
+        super(bytes);
     }
 
     public void parse() {
@@ -60,9 +58,6 @@ public class InternetProtocol {
     }
 
     public void print() {
-        System.out.println("\tDestination: \t" + this.destination);
-        System.out.println("\tSource: \t" + this.source);
-        System.out.println("\tLength: \t" + this.length);
-        System.out.println("\tProtocol: \t" + this.protocol);
+        System.out.println("IP:\tDestination: " + this.destination + "\tSource: " + this.source + "\tProtocol: " + this.protocol);
     }
 }

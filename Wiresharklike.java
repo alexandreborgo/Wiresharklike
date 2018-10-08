@@ -12,8 +12,14 @@ public class Wiresharklike {
         final int packetHeaderSize = 16;
 
         try {
+            /* get the pcap file from argument */
+            if(args.length == 0) {
+                System.out.println("No pcap given.");
+                System.exit(-1);
+            }
+            System.out.print("File: " + args[0] + ", ");
             /* parsing pcap file */
-            InputStream is = new FileInputStream("C:/Users/Alexandre/Documents/Programmation/wiresharklike/http.pcap");
+            InputStream is = new FileInputStream(args[0]);
             
             byte[] globalHeaderBuffer = new byte[globalHeaderSize];
             if(is.read(globalHeaderBuffer) == globalHeaderSize) {
@@ -33,6 +39,7 @@ public class Wiresharklike {
             }
 
             System.out.println(packets.size() + " packets found.");
+            System.out.println();
             is.close();
 
             /* parsing packets */

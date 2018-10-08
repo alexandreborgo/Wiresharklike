@@ -2,9 +2,7 @@
 import java.lang.String;
 import java.util.Arrays;
 
-public class EthernetProtocol {
-
-    private byte[] data;
+public class EthernetProtocol extends Protocolx{
 
     private String destination;
     private String source;
@@ -13,7 +11,7 @@ public class EthernetProtocol {
     private final byte[] ipv4 = {(byte)0x08, (byte)0x00};
 
     public EthernetProtocol(byte[] bytes) {
-        this.data = bytes;
+        super(bytes);
     }
 
     public void parse() {
@@ -55,8 +53,6 @@ public class EthernetProtocol {
     }
 
     public void print() {
-        System.out.println("\tDestination: \t" + this.destination);
-        System.out.println("\tSource: \t" + this.source);
-        System.out.println("\tProtocol: \t" + this.protocol);
+        System.out.println("Ethernet:\tDestination: " + this.destination + "\tSource: " + this.source + "\tProtocol: " + this.protocol);
     }
 }

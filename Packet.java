@@ -12,9 +12,8 @@ public class Packet {
     private byte[] ts_usec;        /* 32b timestamp microseconds */
     private byte[] incl_len;       /* 32b number of octets of packet saved in file */
     private byte[] orig_len;       /* 32b actual length of packet */
-
-    private EthernetProtocol ethernet;
-    private InternetProtocol internet;
+    
+    private Protocolx protocol; 
 
     public Packet(byte[] bytes) {
         this.header = bytes;
@@ -36,17 +35,13 @@ public class Packet {
     }
 
     public void print() {
-        System.out.println("Ethernet: ");
-        this.ethernet.print();
-        System.out.println("Internet Protocol: ");
-        this.internet.print();
         System.out.println();
     }
 
     public void parse() {
-        this.ethernet = new EthernetProtocol(Arrays.copyOfRange(this.data, 0, 14));
-        this.ethernet.parse();
-        this.internet = new InternetProtocol(Arrays.copyOfRange(this.data, 14, 34));
-        this.internet.parse();
+        /* first protocol will always be ethernet (because it only has to support ethernet) */
+        this.protocol = new EthernetProtocol(Arrays.copyOfRange(this.data, 0, this.data.length));
+        this.protocol.parse();
+        
     }
 }

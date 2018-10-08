@@ -24,11 +24,9 @@ public class GlobalHeader {
         this.magic_number = Arrays.copyOfRange(this.header, 0, 4);
 
         if(Arrays.equals(this.magic_number, this.identical)) {
-            System.out.println("Identical ordering.");
             this.ordering = true;
         }
         else if(Arrays.equals(this.magic_number, this.swapped)) {
-            System.out.println("Swapped ordering.");
             this.ordering = false;
         }
         else {
