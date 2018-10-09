@@ -1,43 +1,53 @@
 
 import java.util.Arrays;
 
-public class InternetProtocol extends Protocolx {
+public class InternetProtocol extends Protocol {
+
     private int length;
+    private Protocol protocol = null;
+    private String source = "";
+    private String destination = "";
+    private int headerSize;
+    private int version;
+    private byte[] payload;
 
-    private Protocol protocol;
-    private String source;
-    private String destination;
+    // plus pr les flags : Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]);
 
-    private final byte[] tcp = {(byte)0x06};
+    public static final byte[] hexaValue = {(byte)0x08, (byte)0x00};
 
     public InternetProtocol(byte[] bytes) {
-        super(bytes);
+        super(bytes, "IPv4");
     }
 
     public void parse() {
-        this.parseLength();
-        this.parseProtocol();
+        this.parseVersion();
+        this.parseHeaderSize();
         this.parseSource();
         this.parseDestination();
+        this.parsePayload();
+        this.parseLength();
+        this.parseProtocol();
     }
 
-    public void parseLength() {
+    private void parseLength() {
         byte[] lth = Arrays.copyOfRange(this.data, 2, 4);        
         this.length = Wiresharklike.bytesToInt(lth);
     }
 
-    public void parseProtocol() {
-        byte[] prc = Arrays.copyOfRange(this.data, 9, 10);        
-        
-        if(Arrays.equals(prc, this.tcp)) {
-            protocol = Protocol.TCP;
+    private void parseProtocol() {
+        byte[] prc = Arrays.copyOfRange(this.data, 9, 10);
+        if(Arrays.equals(prc, TransmissionControlProtocol.hexaValue)) {
+            this.protocol = new TransmissionControlProtocol(Arrays.copyOfRange(this.payload, 0, this.payload.length));
         }
         else {
-            protocol = Protocol.Unknown;
+            this.protocol = new UnknownProtocol();
+        }
+        if(this.protocol != null) {
+            this.protocol.parse();
         }
     }
 
-    public void parseSource() {
+    private void parseSource() {
         byte[] src = Arrays.copyOfRange(this.data, 12, 16);        
         String source = "";
         for(int i=0; i<4; i++) {
@@ -47,7 +57,7 @@ public class InternetProtocol extends Protocolx {
         this.source = source;
     }
 
-    public void parseDestination() {
+    private void parseDestination() {
         byte[] dst = Arrays.copyOfRange(this.data, 16, 20);        
         String destination = "";
         for(int i=0; i<4; i++) {
@@ -57,7 +67,23 @@ public class InternetProtocol extends Protocolx {
         this.destination = destination;
     }
 
+    private void parseVersion() {
+        int[] bits = Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]);
+        this.version = Wiresharklike.restoreInt(Arrays.copyOfRange(bits, 0, 4));
+    }
+
+    private void parseHeaderSize() {
+        int[] bits = Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]);
+        this.headerSize = Wiresharklike.restoreInt(Arrays.copyOfRange(bits, 4, 8));
+    }
+
+    private void parsePayload() {
+        int offset = (32 * this.headerSize) / 8; /* sizeof word * nb words / sizeof byte */
+        this.payload = Arrays.copyOfRange(this.data, offset, this.data.length);
+    }
+
     public void print() {
-        System.out.println("IP:\tDestination: " + this.destination + "\tSource: " + this.source + "\tProtocol: " + this.protocol);
+        System.out.println("Internet:\t" + this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
+        this.protocol.print();
     }
 }

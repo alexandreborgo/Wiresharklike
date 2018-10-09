@@ -66,6 +66,7 @@ public class Wiresharklike {
 
     /* util functions */
 
+    /* reverse an array */
     public static void reverse(byte[] array) {
         for(int i=0; i<array.length/2; i++) {
             byte tmp = array[i];
@@ -74,6 +75,7 @@ public class Wiresharklike {
         }
     }    
 
+    /* print a byte array in hexadecimal */
     public static void printBytes(byte[] array) {
         for (byte b : array) {
             System.out.format("%02X ", b);
@@ -81,11 +83,30 @@ public class Wiresharklike {
         System.out.println();
     }
 
+    /* transform an array of bytes into an int */
     public static int bytesToInt(byte[] bytes) {
         int v = 0;
         for(int i=0; i<bytes.length; i++) {
             v = v << 8;
             v = v | (bytes[i] & 0xFF);
+        }
+        return v;
+    }
+
+    /* transform an array of byte into an array of int */
+    public static int[] toBits(byte B) {
+        int[] bits = new int[8];
+        for(int i=0; i<8; i++) {
+            bits[7-i] = (B >> i) & 1;
+        }
+        return bits;
+    }
+
+    /* transform an arry of int (bits) into an int */
+    public static int restoreInt(int[] bits) {
+        int v = 0;
+        for(int i=0; i<bits.length; i++) {
+            v = (v << 1) | bits[i];
         }
         return v;
     }

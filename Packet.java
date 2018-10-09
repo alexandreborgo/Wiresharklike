@@ -13,7 +13,7 @@ public class Packet {
     private byte[] incl_len;       /* 32b number of octets of packet saved in file */
     private byte[] orig_len;       /* 32b actual length of packet */
     
-    private Protocolx protocol; 
+    private Protocol protocol; 
 
     public Packet(byte[] bytes) {
         this.header = bytes;
@@ -35,6 +35,7 @@ public class Packet {
     }
 
     public void print() {
+        this.protocol.print();
         System.out.println();
     }
 
