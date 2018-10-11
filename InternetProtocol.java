@@ -19,6 +19,10 @@ public class InternetProtocol extends Protocol {
         super(bytes, "IPv4");
     }
 
+    public InternetProtocol() {
+        super("IPv4");
+    }
+
     public void parse() {
         this.parseVersion();
         this.parseHeaderSize();
@@ -35,36 +39,17 @@ public class InternetProtocol extends Protocol {
     }
 
     private void parseProtocol() {
-        byte[] prc = Arrays.copyOfRange(this.data, 9, 10);
-        if(Arrays.equals(prc, TransmissionControlProtocol.hexaValue)) {
-            this.protocol = new TransmissionControlProtocol(Arrays.copyOfRange(this.payload, 0, this.payload.length));
-        }
-        else {
-            this.protocol = new UnknownProtocol();
-        }
-        if(this.protocol != null) {
-            this.protocol.parse();
-        }
+        this.protocol = Wiresharklike.parseProtocolType(Arrays.copyOfRange(this.data, 9, 10));
+        this.protocol.setData(Arrays.copyOfRange(this.payload, 0, this.payload.length));
+        this.protocol.parse(); 
     }
 
     private void parseSource() {
-        byte[] src = Arrays.copyOfRange(this.data, 12, 16);        
-        String source = "";
-        for(int i=0; i<4; i++) {
-            source += Integer.parseInt(String.format("%X", src[i]), 16) + ".";
-        }
-        source = source.substring(0, source.length() - 1);
-        this.source = source;
+        this.source = Wiresharklike.parseIp(Arrays.copyOfRange(this.data, 12, 16));
     }
 
     private void parseDestination() {
-        byte[] dst = Arrays.copyOfRange(this.data, 16, 20);        
-        String destination = "";
-        for(int i=0; i<4; i++) {
-            destination += Integer.parseInt(String.format("%X", dst[i]), 16) + ".";
-        }
-        destination = destination.substring(0, destination.length() - 1);
-        this.destination = destination;
+        this.destination = Wiresharklike.parseIp(Arrays.copyOfRange(this.data, 16, 20));
     }
 
     private void parseVersion() {
@@ -83,7 +68,8 @@ public class InternetProtocol extends Protocol {
     }
 
     public void print() {
-        System.out.println("Internet:\t" + this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
+        super.print();
+        System.out.println(this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
         this.protocol.print();
     }
 }

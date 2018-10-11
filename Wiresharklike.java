@@ -2,6 +2,7 @@
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -109,5 +110,43 @@ public class Wiresharklike {
             v = (v << 1) | bits[i];
         }
         return v;
+    }
+
+    /* return @Mac in String from byte[] @Mac */
+    public static String parseMac(byte[] bytes) {        
+        String mac = "";
+        for(int i=0; i<6; i++) {
+            mac += String.format("%02X:", bytes[i]);
+        }
+        mac = mac.substring(0, mac.length() - 1);
+        return mac;
+    }
+
+    /* return @IP in String from byte[] @IP */
+    public static String parseIp(byte[] bytes) {
+        String ip = "";
+        for(int i=0; i<4; i++) {
+            ip += Integer.parseInt(String.format("%X", bytes[i]), 16) + ".";
+        }
+        ip = ip.substring(0, ip.length() - 1);
+        return ip;
+    }
+
+    /* return Protocol from byte[] type */
+    public static Protocol parseProtocolType(byte[] bytes) {
+        Protocol protocol = null;
+        if(Arrays.equals(bytes, InternetProtocol.hexaValue)) {
+            protocol = new InternetProtocol();
+        }
+        else if(Arrays.equals(bytes, AddressResolutionProtocol.hexaValue)) {
+            protocol = new AddressResolutionProtocol();
+        }
+        else if(Arrays.equals(bytes, TransmissionControlProtocol.hexaValue)) {
+            protocol = new TransmissionControlProtocol();
+        }
+        else {
+            protocol = new UnknownProtocol();
+        }
+        return protocol;
     }
 }

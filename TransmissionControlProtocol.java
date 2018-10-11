@@ -13,6 +13,10 @@ public class TransmissionControlProtocol extends Protocol {
         super(bytes, "TCP");
     }
 
+    public TransmissionControlProtocol() {
+        super("TCP");
+    }
+
     public void parse() {
         this.parseSource();
         this.parseDestination();
@@ -34,6 +38,7 @@ public class TransmissionControlProtocol extends Protocol {
     }
 
     public void print() {
-        System.out.println("TCP:\t\t" + this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
+        super.print();
+        System.out.println(this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
     }
 }
