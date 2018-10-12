@@ -3,15 +3,15 @@ import java.util.Arrays;
 public class Packet {
     /* 128b = 16B */
 
-    private int dataSize;
+    private int dataSize;           /* size of the packet */
 
     /* raw information */
     private byte[] header;
     private byte[] data;
-    private byte[] ts_sec;         /* 32b timestamp seconds */
-    private byte[] ts_usec;        /* 32b timestamp microseconds */
-    private byte[] incl_len;       /* 32b number of octets of packet saved in file */
-    private byte[] orig_len;       /* 32b actual length of packet */
+    private byte[] ts_sec;          /* 32b timestamp seconds */
+    private byte[] ts_usec;         /* 32b timestamp microseconds */
+    private byte[] incl_len;        /* 32b number of octets of packet saved in file */
+    private byte[] orig_len;        /* 32b actual length of packet */
     
     private Protocol protocol; 
 

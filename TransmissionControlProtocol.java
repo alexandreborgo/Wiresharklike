@@ -24,13 +24,11 @@ public class TransmissionControlProtocol extends Protocol {
     }
 
     private void parseSource() {
-        byte[] src = Arrays.copyOfRange(this.data, 0, 2);
-        this.source = Wiresharklike.bytesToInt(src);
+        this.source = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 0, 2));
     }
 
     private void parseDestination() {
-        byte[] dst = Arrays.copyOfRange(this.data, 2, 4);
-        this.destination = Wiresharklike.bytesToInt(dst);
+        this.destination = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 2, 4));
     }
 
     private void parseProtocol() {

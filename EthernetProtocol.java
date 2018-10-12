@@ -6,9 +6,9 @@ public class EthernetProtocol extends Protocol {
 
     /* Ethernet 14B header + data */
 
-    private String destination;
-    private String source;
-    private Protocol protocol;
+    private String destination;     /* @MAC destination */
+    private String source;          /* @MAC source */
+    private Protocol protocol;      /* protocol encapsulated by ethernet */
 
     public EthernetProtocol(byte[] bytes) {
         super(bytes, "Ethernet");

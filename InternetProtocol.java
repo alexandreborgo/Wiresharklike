@@ -11,8 +11,6 @@ public class InternetProtocol extends Protocol {
     private int version;
     private byte[] payload;
 
-    // plus pr les flags : Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]);
-
     public static final byte[] hexaValue = {(byte)0x08, (byte)0x00};
 
     public InternetProtocol(byte[] bytes) {
@@ -34,8 +32,7 @@ public class InternetProtocol extends Protocol {
     }
 
     private void parseLength() {
-        byte[] lth = Arrays.copyOfRange(this.data, 2, 4);        
-        this.length = Wiresharklike.bytesToInt(lth);
+        this.length = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 2, 4));        
     }
 
     private void parseProtocol() {
@@ -53,18 +50,16 @@ public class InternetProtocol extends Protocol {
     }
 
     private void parseVersion() {
-        int[] bits = Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]);
-        this.version = Wiresharklike.restoreInt(Arrays.copyOfRange(bits, 0, 4));
+        this.version = Wiresharklike.restoreInt(Arrays.copyOfRange(Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]), 0, 4));
     }
 
     private void parseHeaderSize() {
-        int[] bits = Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]);
-        this.headerSize = Wiresharklike.restoreInt(Arrays.copyOfRange(bits, 4, 8));
+        this.headerSize = Wiresharklike.restoreInt(Arrays.copyOfRange(Wiresharklike.toBits(Arrays.copyOfRange(this.data, 0, 1)[0]), 4, 8));
     }
 
     private void parsePayload() {
-        int offset = (32 * this.headerSize) / 8; /* sizeof word * nb words / sizeof byte */
-        this.payload = Arrays.copyOfRange(this.data, offset, this.data.length);
+        /* offset = sizeof(word)=32 * nb words=(headersize) / sizeof(byte) */
+        this.payload = Arrays.copyOfRange(this.data, (32 * this.headerSize) / 8, this.data.length);
     }
 
     public void print() {
