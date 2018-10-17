@@ -1,8 +1,8 @@
 
 public class UnknownProtocol extends Protocol {
 
-    public UnknownProtocol() {
-        super(null, "Unknown");
+    public UnknownProtocol(Packet packet) {
+        super(packet, "Unknown");
     }
 
     public void print() {

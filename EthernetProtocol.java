@@ -10,12 +10,12 @@ public class EthernetProtocol extends Protocol {
     private String source;          /* @MAC source */
     private Protocol protocol;      /* protocol encapsulated by ethernet */
 
-    public EthernetProtocol(byte[] bytes) {
-        super(bytes, "Ethernet");
+    public EthernetProtocol(Packet packet, byte[] bytes) {
+        super(packet, bytes, "Ethernet");
     }
 
-    public EthernetProtocol() {
-        super("Ethernet");
+    public EthernetProtocol(Packet packet) {
+        super(packet, "Ethernet");
     }
 
     public void parse() {
@@ -33,14 +33,13 @@ public class EthernetProtocol extends Protocol {
     }
 
     private void parseProtocol() {
-        this.protocol = Wiresharklike.parseProtocolType(Arrays.copyOfRange(this.data, 12, 14));
+        this.protocol = Wiresharklike.parseProtocolType(this.packet, Arrays.copyOfRange(this.data, 12, 14));        
         this.protocol.setData(Arrays.copyOfRange(this.data, 14, this.data.length));
         this.protocol.parse();
     }
 
     public void print() {
         super.print();
-        System.out.println(this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
-        this.protocol.print();
+        System.out.println(this.source + " -> " + this.destination);
     }
 }

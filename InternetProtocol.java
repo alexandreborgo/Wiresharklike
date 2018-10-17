@@ -10,15 +10,19 @@ public class InternetProtocol extends Protocol {
     private int headerSize;
     private int version;
     private byte[] payload;
+    private byte[] id;
+    private boolean reservedbit;
+    private boolean donotfragment;
+    private boolean morefragments;
 
     public static final byte[] hexaValue = {(byte)0x08, (byte)0x00};
 
-    public InternetProtocol(byte[] bytes) {
-        super(bytes, "IPv4");
+    public InternetProtocol(Packet packet, byte[] bytes) {
+        super(packet, bytes, "IPv4");
     }
 
-    public InternetProtocol() {
-        super("IPv4");
+    public InternetProtocol(Packet packet) {
+        super(packet, "IPv4");
     }
 
     public void parse() {
@@ -28,7 +32,29 @@ public class InternetProtocol extends Protocol {
         this.parseDestination();
         this.parsePayload();
         this.parseLength();
+        this.parseFlag();
+        this.parseId();
         this.parseProtocol();
+    }
+
+    private void parseFlag() {
+        int[] flags = Arrays.copyOfRange(Wiresharklike.toBits(Arrays.copyOfRange(this.data, 6, 7)[0]), 0, 3);
+        if(flags[0] == 1)
+            this.reservedbit = true;
+        else
+            this.reservedbit = false;
+        if(flags[1] == 1)
+            this.donotfragment = true;
+        else
+            this.donotfragment = false;
+        if(flags[2] == 1)
+            this.morefragments = true;
+        else
+            this.morefragments = false;     
+    }
+
+    private void parseId() {
+        this.id = Arrays.copyOfRange(this.data, 4, 6);
     }
 
     private void parseLength() {
@@ -36,9 +62,9 @@ public class InternetProtocol extends Protocol {
     }
 
     private void parseProtocol() {
-        this.protocol = Wiresharklike.parseProtocolType(Arrays.copyOfRange(this.data, 9, 10));
+        this.protocol = Wiresharklike.parseProtocolType(this.packet, Arrays.copyOfRange(this.data, 9, 10));
         this.protocol.setData(Arrays.copyOfRange(this.payload, 0, this.payload.length));
-        this.protocol.parse(); 
+        this.protocol.parse();
     }
 
     private void parseSource() {
@@ -64,7 +90,6 @@ public class InternetProtocol extends Protocol {
 
     public void print() {
         super.print();
-        System.out.println(this.source + " -> " + this.destination + " (" + this.protocol.name + ")");
-        this.protocol.print();
+        System.out.println(this.source + " -> " + this.destination);
     }
 }

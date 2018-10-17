@@ -3,14 +3,19 @@ public class Protocol {
 
     public byte[] data;
     public String name;
+    public Packet packet;
 
-    public Protocol(String name) {
+    public Protocol(Packet packet, String name) {
         this.name = name;
+        this.packet = packet;
+        this.packet.protocols.add(this);
     }
 
-    public Protocol(byte[] data, String name) {
+    public Protocol(Packet packet, byte[] data, String name) {
         this.data = data;
         this.name = name;
+        this.packet = packet;
+        this.packet.protocols.add(this);
     }
 
     public void parse() {
@@ -23,5 +28,13 @@ public class Protocol {
 
     public void print() {
         System.out.print(this.name + ": ");
+    }
+
+    public Packet getPacket() {
+        return this.packet;
+    }
+
+    public void flow() {
+        
     }
 }

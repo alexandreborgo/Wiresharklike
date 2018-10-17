@@ -9,12 +9,12 @@ public class TransmissionControlProtocol extends Protocol {
 
     public static final byte[] hexaValue = {(byte)0x06};
 
-    public TransmissionControlProtocol(byte[] bytes) {
-        super(bytes, "TCP");
+    public TransmissionControlProtocol(Packet packet, byte[] bytes) {
+        super(packet, bytes, "TCP");
     }
 
-    public TransmissionControlProtocol() {
-        super("TCP");
+    public TransmissionControlProtocol(Packet packet) {
+        super(packet, "TCP");
     }
 
     public void parse() {
@@ -32,7 +32,7 @@ public class TransmissionControlProtocol extends Protocol {
     }
 
     private void parseProtocol() {
-        this.protocol = new UnknownProtocol();
+        this.protocol = new UnknownProtocol(this.packet);
     }
 
     public void print() {

@@ -13,12 +13,12 @@ public class AddressResolutionProtocol extends Protocol {
     public static final byte[] request = {(byte)0x00, (byte)0x01};
     public static final byte[] reply = {(byte)0x00, (byte)0x02};
 
-    public AddressResolutionProtocol(byte[] bytes) {
-        super(bytes, "ARP");
+    public AddressResolutionProtocol(Packet packet, byte[] bytes) {
+        super(packet, bytes, "ARP");
     }
 
-    public AddressResolutionProtocol() {
-        super("ARP");
+    public AddressResolutionProtocol(Packet packet) {
+        super(packet, "ARP");
     }
 
     public void parse() {

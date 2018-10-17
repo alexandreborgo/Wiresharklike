@@ -7,6 +7,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class Wiresharklike {
+
+    public static ArrayList<ICMPStream> icmpstreams = new ArrayList<ICMPStream>();
+
+    public static ICMPStream findICMPStream(int id, int sequence) {
+        for(ICMPStream is : Wiresharklike.icmpstreams) {
+            if(id == is.getId() && sequence == is.getSequence()) {
+                return is;
+            }
+        }
+        System.out.println("error");
+        return null;
+    }
     public static void main(String[] args) {
 
         final int globalHeaderSize = 24;
@@ -32,7 +44,7 @@ public class Wiresharklike {
             Packet packet;
             byte[] packetDataBuffer;
             while(is.read(packetHeaderBuffer) == packetHeaderSize) {
-                packet = new Packet(packetHeaderBuffer);
+                packet = new Packet(packets.size(), packetHeaderBuffer);
                 packetDataBuffer = new byte[packet.getDataSize()];
                 is.read(packetDataBuffer);
                 packet.setData(packetDataBuffer);
@@ -46,6 +58,13 @@ public class Wiresharklike {
             /* parsing packets */
             for(int i=0; i<packets.size(); i++) {
                 packets.get(i).parse();
+            }
+            /* rebuild flow */
+            for(int i=0; i<packets.size(); i++) {
+                packets.get(i).flow();
+            }
+            /* print */
+            for(int i=0; i<packets.size(); i++) {
                 packets.get(i).print();
             }
         }
@@ -94,7 +113,7 @@ public class Wiresharklike {
         return v;
     }
 
-    /* transform an array of byte into an array of int */
+    /* transform a byte into an array of int */
     public static int[] toBits(byte B) {
         int[] bits = new int[8];
         for(int i=0; i<8; i++) {
@@ -103,7 +122,18 @@ public class Wiresharklike {
         return bits;
     }
 
-    /* transform an arry of int (bits) into an int */
+    /* transform an array byte into an array of int */
+    public static int[] arrayToBits(byte[] B) {
+        int[] bits = new int[B.length * 8];
+        for(int j=0; j<B.length; j++) {
+            for(int i=0; i<8; i++) {
+                bits[7-i] = (B[j] >> i) & 1;
+            }
+        }
+        return bits;
+    }
+
+    /* transform an array of int (bits) into an int */
     public static int restoreInt(int[] bits) {
         int v = 0;
         for(int i=0; i<bits.length; i++) {
@@ -133,19 +163,22 @@ public class Wiresharklike {
     }
 
     /* return Protocol from byte[] type */
-    public static Protocol parseProtocolType(byte[] bytes) {
+    public static Protocol parseProtocolType(Packet packet, byte[] bytes) {
         Protocol protocol = null;
         if(Arrays.equals(bytes, InternetProtocol.hexaValue)) {
-            protocol = new InternetProtocol();
+            protocol = new InternetProtocol(packet);
         }
         else if(Arrays.equals(bytes, AddressResolutionProtocol.hexaValue)) {
-            protocol = new AddressResolutionProtocol();
+            protocol = new AddressResolutionProtocol(packet);
         }
         else if(Arrays.equals(bytes, TransmissionControlProtocol.hexaValue)) {
-            protocol = new TransmissionControlProtocol();
+            protocol = new TransmissionControlProtocol(packet);
+        }
+        else if(Arrays.equals(bytes, InternetControlMessageProtocol.hexaValue)) {
+            protocol = new InternetControlMessageProtocol(packet);
         }
         else {
-            protocol = new UnknownProtocol();
+            protocol = new UnknownProtocol(packet);
         }
         return protocol;
     }
