@@ -8,6 +8,17 @@ import java.io.IOException;
 
 public class Wiresharklike {
 
+    public static ArrayList<IPFragmentsGroup> ipfraggroup = new ArrayList<IPFragmentsGroup>();
+
+    public static IPFragmentsGroup findIpFragmentsGroup(int id, String source, String destination) {
+        for(IPFragmentsGroup ifg : Wiresharklike.ipfraggroup) {
+            if(id == ifg.id && source.equals(ifg.source) && destination.equals(ifg.destination)) {
+                return ifg;
+            }
+        }
+        return null;
+    }
+
     public static ArrayList<ICMPStream> icmpstreams = new ArrayList<ICMPStream>();
 
     public static ICMPStream findICMPStream(int id, int sequence) {
@@ -19,69 +30,93 @@ public class Wiresharklike {
         System.out.println("error");
         return null;
     }
-    public static void main(String[] args) {
 
-        final int globalHeaderSize = 24;
-        final int packetHeaderSize = 16;
+    private InputStream is;
+    private GlobalHeader globalHeader;
+    private ArrayList<Packet> packets;
 
+    private static final int globalHeaderSize = 24;
+    private static final int packetHeaderSize = 16;
+
+    private void readGlobalHeader() {
         try {
-            /* get the pcap file from argument */
-            if(args.length == 0) {
-                System.out.println("No pcap given.");
-                System.exit(-1);
+            byte[] globalHeaderBuffer = new byte[Wiresharklike.globalHeaderSize];
+            if(this.is.read(globalHeaderBuffer) == Wiresharklike.globalHeaderSize) {
+                this.globalHeader = new GlobalHeader(globalHeaderBuffer);
             }
-            System.out.print("File: " + args[0] + ", ");
-            /* parsing pcap file */
-            InputStream is = new FileInputStream(args[0]);
-            
-            byte[] globalHeaderBuffer = new byte[globalHeaderSize];
-            if(is.read(globalHeaderBuffer) == globalHeaderSize) {
-                GlobalHeader globalHeader = new GlobalHeader(globalHeaderBuffer);
-            }
-            
-            ArrayList<Packet> packets = new ArrayList<Packet>();
-            byte[] packetHeaderBuffer = new byte[packetHeaderSize];
+        } catch (IOException exception) {
+            exception.printStackTrace();
+            System.exit(-1);
+        } catch(PcapException exception) {
+            exception.printStackTrace();
+            System.exit(-1);
+        }
+    }
+
+    public void readPackets() {
+        try {
+            this.packets = new ArrayList<Packet>();
+            byte[] packetHeaderBuffer = new byte[Wiresharklike.packetHeaderSize];
             Packet packet;
             byte[] packetDataBuffer;
-            while(is.read(packetHeaderBuffer) == packetHeaderSize) {
-                packet = new Packet(packets.size(), packetHeaderBuffer);
+            while(this.is.read(packetHeaderBuffer) == Wiresharklike.packetHeaderSize) {
+                packet = new Packet(this.packets.size(), packetHeaderBuffer);
                 packetDataBuffer = new byte[packet.getDataSize()];
-                is.read(packetDataBuffer);
+                this.is.read(packetDataBuffer);
                 packet.setData(packetDataBuffer);
-                packets.add(packet);
+                this.packets.add(packet);
             }
+        } catch (IOException exception) {
+            exception.printStackTrace();
+            System.exit(-1);
+        }
+    }
 
-            System.out.println(packets.size() + " packets found.");
-            System.out.println();
+    public Wiresharklike(String pcap) {
+        try {
+            this.is = new FileInputStream(pcap);
+        } catch(FileNotFoundException exception) {
+            System.out.println("Pcap file not found.");
+            exception.printStackTrace();
+            System.exit(-1);
+        }
+
+        this.readGlobalHeader();
+        this.readPackets();
+
+        System.out.println("File: " + pcap + ", " + packets.size() + " packets found.\n");
+        
+        try {
             is.close();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+            System.exit(-1);
+        }
 
-            /* parsing packets */
-            for(int i=0; i<packets.size(); i++) {
-                packets.get(i).parse();
-            }
-            /* rebuild flow */
-            for(int i=0; i<packets.size(); i++) {
-                packets.get(i).flow();
-            }
-            /* print */
-            for(int i=0; i<packets.size(); i++) {
-                packets.get(i).print();
-            }
+        /* parsing packets */
+        for(int i=0; i<packets.size(); i++) {
+            packets.get(i).parse();
         }
-        catch(FileNotFoundException exception) {
-            System.out.println("File not found.");
-            exception.printStackTrace();
+        /* rebuild packets */
+        for(int i =0; i<this.ipfraggroup.size(); i++) {
+            this.ipfraggroup.get(i).rebuild();
+        }
+        /* rebuild flow */
+        for(int i=0; i<packets.size(); i++) {
+            packets.get(i).flow();
+        }
+        /* print */
+        for(int i=0; i<packets.size(); i++) {
+            packets.get(i).print();
+        }
+    }
+
+    public static void main(String[] args) {
+        if(args.length == 0) {
+            System.out.println("No pcap file given.");
             System.exit(-1);
         }
-        catch(IOException exception) {
-            System.out.println("Reading error.");
-            exception.printStackTrace();
-            System.exit(-1);
-        }
-        catch(PcapException exception) {
-            exception.printStackTrace();
-            System.exit(-1);
-        }
+        new Wiresharklike(args[0]);        
     }
 
     /* util functions */
@@ -127,8 +162,16 @@ public class Wiresharklike {
         int[] bits = new int[B.length * 8];
         for(int j=0; j<B.length; j++) {
             for(int i=0; i<8; i++) {
-                bits[7-i] = (B[j] >> i) & 1;
+                bits[(B.length * 8)-1-j-i] = (B[j] >> i) & 1;
             }
+        }
+        return bits;
+    }
+
+    public static int[] binToBits(byte b) {
+        int[] bits = new int[8];
+        for(int i=0; i<8; i++) {
+            bits[7-i] = (b >> i) & 1;
         }
         return bits;
     }

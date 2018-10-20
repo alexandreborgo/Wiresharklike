@@ -37,4 +37,8 @@ public class Protocol {
     public void flow() {
         
     }
+
+    public byte[] getData() {
+        return this.data;
+    }
 }

@@ -1,5 +1,6 @@
 
 import java.util.Arrays;
+import java.lang.NumberFormatException;
 
 public class InternetControlMessageProtocol extends Protocol {
     
@@ -7,6 +8,7 @@ public class InternetControlMessageProtocol extends Protocol {
     private int type;
     private int id;
     private int sequence;
+    private byte[] payload;
     private ICMPStream icmpstream;
 
     public InternetControlMessageProtocol(Packet packet, byte[] bytes) {
@@ -21,6 +23,7 @@ public class InternetControlMessageProtocol extends Protocol {
         this.parseType();
         this.parseId();
         this.parseSequence();
+        this.parsePayload();
     }
 
     private void parseType() {
@@ -35,15 +38,25 @@ public class InternetControlMessageProtocol extends Protocol {
         this.sequence = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 6, 8));
     }
 
+    private void parsePayload() {
+        this.payload = Arrays.copyOfRange(this.data, 16, this.data.length - 16);
+    }
+
     public void print() {
         super.print();
         if(this.type == 8) {
-            System.out.print("Echo (ping) request, reply in " + this.icmpstream.getReply().getPacket().getUid());
+            System.out.print("Echo (ping) request, reply in [" + this.icmpstream.getReply().getPacket().getUid() + "]");
         }
         else if(this.type == 0) {
             System.out.print("Echo (ping) reply, request in [" + this.icmpstream.getRequest().getPacket().getUid() + "]");
         }
         System.out.println(" (id=" + this.icmpstream.getId() + ", seq=" + this.icmpstream.getSequence() + ")");
+        System.out.print("Data: ");
+        String pl = "";
+        for(int i=0; i<this.payload.length && i<100; i++) {
+            System.out.format("%02X ", this.payload[i]);
+        }
+        System.out.println(pl);
     }
 
     public void flow() {        

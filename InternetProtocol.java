@@ -10,10 +10,14 @@ public class InternetProtocol extends Protocol {
     private int headerSize;
     private int version;
     private byte[] payload;
-    private byte[] id;
+    private int id;
     private boolean reservedbit;
     private boolean donotfragment;
     private boolean morefragments;
+    private int offset;
+    private boolean fragment = false;
+    private boolean lastfragment = false;
+    private IPFragmentsGroup ipfraggroup;
 
     public static final byte[] hexaValue = {(byte)0x08, (byte)0x00};
 
@@ -32,13 +36,29 @@ public class InternetProtocol extends Protocol {
         this.parseDestination();
         this.parsePayload();
         this.parseLength();
-        this.parseFlag();
+        this.parseFlags();
         this.parseId();
-        this.parseProtocol();
+
+        if(this.offset == 0 && !this.morefragments) {
+            this.parseProtocol();
+        }
+        else {
+            // this is a fragment
+            this.fragment = true;
+            IPFragmentsGroup ifg = Wiresharklike.findIpFragmentsGroup(this.id, this.source, this.destination);
+            if(ifg == null) {
+                this.ipfraggroup = new IPFragmentsGroup(this.id, this.source, this.destination);
+                Wiresharklike.ipfraggroup.add(this.ipfraggroup);
+            }
+            else {
+                this.ipfraggroup = ifg;
+            }
+            this.ipfraggroup.add(this);
+        }
     }
 
-    private void parseFlag() {
-        int[] flags = Arrays.copyOfRange(Wiresharklike.toBits(Arrays.copyOfRange(this.data, 6, 7)[0]), 0, 3);
+    private void parseFlags() {
+        int[] flags = Wiresharklike.binToBits(Arrays.copyOfRange(this.data, 6, 7)[0]);
         if(flags[0] == 1)
             this.reservedbit = true;
         else
@@ -50,18 +70,31 @@ public class InternetProtocol extends Protocol {
         if(flags[2] == 1)
             this.morefragments = true;
         else
-            this.morefragments = false;     
+            this.morefragments = false;
+        
+        int[] flags2 = Wiresharklike.binToBits(Arrays.copyOfRange(this.data, 7, 8)[0]);
+
+        int[] offset = new int[13];
+        int i = 0;
+        for(int j = 3; j<8; j++) {
+            offset[i++] = flags[j];
+        }
+        for(int j = 0; j<8; j++) {
+            offset[i++] = flags2[j];
+        }
+
+        this.offset = Wiresharklike.restoreInt(offset) * 8;
     }
 
     private void parseId() {
-        this.id = Arrays.copyOfRange(this.data, 4, 6);
+        this.id = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 4, 6));
     }
 
     private void parseLength() {
         this.length = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 2, 4));        
     }
 
-    private void parseProtocol() {
+    public void parseProtocol() {
         this.protocol = Wiresharklike.parseProtocolType(this.packet, Arrays.copyOfRange(this.data, 9, 10));
         this.protocol.setData(Arrays.copyOfRange(this.payload, 0, this.payload.length));
         this.protocol.parse();
@@ -91,5 +124,28 @@ public class InternetProtocol extends Protocol {
     public void print() {
         super.print();
         System.out.println(this.source + " -> " + this.destination);
+        if(this.fragment) {
+            System.out.println("IP Fragment, rebuilt in [" + this.ipfraggroup.rebuildpacketid + "] (id=" + this.id + ", offset=" + this.offset + ").");
+        }
+    }
+
+    public int getOffset() {
+        return this.offset;
+    }
+
+    public int getPayloadLength() {
+        return this.length - (this.headerSize * 4);
+    }
+
+    public byte[] getPayload() {
+        return this.payload;
+    }
+
+    public void setPayload(byte[] payload) {
+        this.payload = payload;
+    }
+
+    public void setLastFragment() {
+        this.lastfragment = true;
     }
 }
