@@ -39,7 +39,7 @@ public class InternetControlMessageProtocol extends Protocol {
     }
 
     private void parsePayload() {
-        this.payload = Arrays.copyOfRange(this.data, 16, this.data.length - 16);
+        this.payload = Arrays.copyOfRange(this.data, 9, this.data.length - 9);
     }
 
     public void print() {
@@ -52,11 +52,7 @@ public class InternetControlMessageProtocol extends Protocol {
         }
         System.out.println(" (id=" + this.icmpstream.getId() + ", seq=" + this.icmpstream.getSequence() + ")");
         System.out.print("Data: ");
-        String pl = "";
-        for(int i=0; i<this.payload.length && i<100; i++) {
-            System.out.format("%02X ", this.payload[i]);
-        }
-        System.out.println(pl);
+        System.out.println(Wiresharklike.byteToAscii(this.payload));
     }
 
     public void flow() {        

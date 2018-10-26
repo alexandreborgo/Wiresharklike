@@ -225,4 +225,15 @@ public class Wiresharklike {
         }
         return protocol;
     }
+
+    /* payload in hexa to data */
+    public static String byteToAscii(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        String tmp = "";
+        for(int i=0; i<bytes.length && i<100; i++) {
+            tmp = String.format("%02X", bytes[i]);
+            result.append((char) Integer.parseInt(tmp, 16));
+        }
+        return result.toString();
+    }
 }
