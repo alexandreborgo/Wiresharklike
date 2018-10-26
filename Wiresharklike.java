@@ -148,6 +148,16 @@ public class Wiresharklike {
         return v;
     }
 
+    /* transform an array of bytes into an int */
+    public static long bytesToLong(byte[] bytes) {
+        long v = 0;
+        for(int i=0; i<bytes.length; i++) {
+            v = v << 8;
+            v = v | (bytes[i] & 0xFF);
+        }
+        return v;
+    }
+
     /* transform a byte into an array of int */
     public static int[] toBits(byte B) {
         int[] bits = new int[8];
