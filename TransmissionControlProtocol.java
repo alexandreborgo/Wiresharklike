@@ -20,14 +20,20 @@ public class TransmissionControlProtocol extends Protocol {
     private long sequence;
     private long acknowledgment;
 
+    private Protocol ip;
+
+    private TCPStream tcpstream;
+
     public static final byte[] hexaValue = {(byte)0x06};
 
     public TransmissionControlProtocol(Packet packet, byte[] bytes) {
         super(packet, bytes, "TCP");
+        this.ip = this.packet.protocols.get(this.packet.protocols.size()-1);
     }
 
     public TransmissionControlProtocol(Packet packet) {
         super(packet, "TCP");
+        this.ip = this.packet.protocols.get(this.packet.protocols.size()-1);
     }
 
     public void parse() {
@@ -35,8 +41,18 @@ public class TransmissionControlProtocol extends Protocol {
         this.parseDestination();
         this.parseFlags();
         this.parseAcknowledgment();
-        this.parseSequence();
+        this.parseSequence();        
         this.parseProtocol();
+
+        TCPStream ts = Wiresharklike.findTCPStream(this.ip.getSource(), this.ip.getDestination(), this.source, this.destination);
+        if(ts == null) {
+            this.tcpstream = new TCPStream(this.ip.getSource(), this.ip.getDestination(), this.source, this.destination);
+            Wiresharklike.tcpstreams.add(this.tcpstream);
+        }
+        else
+            this.tcpstream = ts;
+    
+        this.tcpstream.add(this);
     }
 
     private void parseSource() {
@@ -82,5 +98,17 @@ public class TransmissionControlProtocol extends Protocol {
         if(this.fin) System.out.print("FIN ");
         if(this.push) System.out.print("PSH ");
         System.out.println("] (seq=" + this.sequence + ", ack=" + this.acknowledgment + ").");
+    }
+
+    public boolean getSyn() {
+        return this.syn;
+    }
+
+    public boolean getFin() {
+        return this.fin;
+    }
+
+    public boolean getAck() {
+        return this.ack;
     }
 }

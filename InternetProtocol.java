@@ -148,4 +148,12 @@ public class InternetProtocol extends Protocol {
     public void setLastFragment() {
         this.lastfragment = true;
     }
+
+    public String getsource() {
+        return this.source;
+    }
+
+    public String getDestination() {
+        return this.destination;
+    }
 }

@@ -24,6 +24,20 @@ public class InternetControlMessageProtocol extends Protocol {
         this.parseId();
         this.parseSequence();
         this.parsePayload();
+
+        ICMPStream is = Wiresharklike.findICMPStream(this.id, this.sequence);
+
+        if(is == null) {
+            this.icmpstream = new ICMPStream(this.id, this.sequence);
+            Wiresharklike.icmpstreams.add(this.icmpstream);
+        }
+        else
+            this.icmpstream = is;
+
+        if(this.type == 8)       
+            this.icmpstream.setRequest(this);
+        else if(this.type == 0)
+            this.icmpstream.setReply(this);
     }
 
     private void parseType() {
@@ -53,17 +67,5 @@ public class InternetControlMessageProtocol extends Protocol {
         System.out.println(" (id=" + this.icmpstream.getId() + ", seq=" + this.icmpstream.getSequence() + ")");
         System.out.print("Data: ");
         System.out.println(Wiresharklike.byteToAscii(this.payload));
-    }
-
-    public void flow() {        
-        if(this.type == 8) {
-            this.icmpstream = new ICMPStream(this.id, this.sequence);
-            this.icmpstream.setRequest(this);
-            Wiresharklike.icmpstreams.add(this.icmpstream);
-        }
-        else if(this.type == 0) {
-            this.icmpstream = Wiresharklike.findICMPStream(this.id, this.sequence);
-            this.icmpstream.setReply(this);
-        }
     }
 }

@@ -18,10 +18,6 @@ public class Protocol {
         this.packet.protocols.add(this);
     }
 
-    public void parse() {
-
-    }
-
     public void setData(byte[] bytes) {
         this.data = bytes;
     }
@@ -34,11 +30,12 @@ public class Protocol {
         return this.packet;
     }
 
-    public void flow() {
-        
-    }
-
     public byte[] getData() {
         return this.data;
     }
+
+    public void parse() {}
+    public void flow() {}
+    public String getSource() { return ""; }
+    public String getDestination() { return ""; }
 }

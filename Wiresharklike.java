@@ -27,7 +27,17 @@ public class Wiresharklike {
                 return is;
             }
         }
-        System.out.println("error");
+        return null;
+    }
+
+    public static ArrayList<TCPStream> tcpstreams = new ArrayList<TCPStream>();
+
+    public static TCPStream findTCPStream(String ip1, String ip2, int port1, int port2) {
+        for(TCPStream ts : Wiresharklike.tcpstreams) {
+            if(ts.areIps(ip1, ip2) && ts.arePorts(port1, port2)) {
+                return ts;
+            }
+        }
         return null;
     }
 
@@ -97,18 +107,24 @@ public class Wiresharklike {
         for(int i=0; i<packets.size(); i++) {
             packets.get(i).parse();
         }
-        /* rebuild packets */
-        for(int i =0; i<this.ipfraggroup.size(); i++) {
-            this.ipfraggroup.get(i).rebuild();
+        
+        /* rebuild from IP fragmentation */
+        for(int i =0; i<Wiresharklike.ipfraggroup.size(); i++) {
+            Wiresharklike.ipfraggroup.get(i).rebuild();
         }
-        /* rebuild flow */
-        for(int i=0; i<packets.size(); i++) {
-            packets.get(i).flow();
+        
+        /* analyse TCP stream */
+        for(int i =0; i<Wiresharklike.tcpstreams.size(); i++) {
+            Wiresharklike.tcpstreams.get(i).analyse();
         }
+
         /* print */
         for(int i=0; i<packets.size(); i++) {
             packets.get(i).print();
         }
+
+        System.out.println(Wiresharklike.tcpstreams.size());
+        System.out.println(Wiresharklike.tcpstreams.get(0).tcppackets.size());
     }
 
     public static void main(String[] args) {
