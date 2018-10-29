@@ -16,6 +16,7 @@ public class Packet {
     private byte[] orig_len;        /* 32b actual length of packet */
     
     public ArrayList<Protocol> protocols = new ArrayList<Protocol>();
+    public InternetProtocol ip;
     private Protocol protocol;
 
     public Packet(int uid, byte[] bytes) {

@@ -122,9 +122,6 @@ public class Wiresharklike {
         for(int i=0; i<packets.size(); i++) {
             packets.get(i).print();
         }
-
-        System.out.println(Wiresharklike.tcpstreams.size());
-        System.out.println(Wiresharklike.tcpstreams.get(0).tcppackets.size());
     }
 
     public static void main(String[] args) {

@@ -36,6 +36,4 @@ public class Protocol {
 
     public void parse() {}
     public void flow() {}
-    public String getSource() { return ""; }
-    public String getDestination() { return ""; }
 }

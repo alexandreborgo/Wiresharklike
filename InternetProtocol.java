@@ -8,6 +8,7 @@ public class InternetProtocol extends Protocol {
     private String source = "";
     private String destination = "";
     private int headerSize;
+    private int payloadSize;
     private int version;
     private byte[] payload;
     private int id;
@@ -23,10 +24,12 @@ public class InternetProtocol extends Protocol {
 
     public InternetProtocol(Packet packet, byte[] bytes) {
         super(packet, bytes, "IPv4");
+        this.packet.ip = this;
     }
 
     public InternetProtocol(Packet packet) {
         super(packet, "IPv4");
+        this.packet.ip = this;
     }
 
     public void parse() {
@@ -34,8 +37,8 @@ public class InternetProtocol extends Protocol {
         this.parseHeaderSize();
         this.parseSource();
         this.parseDestination();
-        this.parsePayload();
         this.parseLength();
+        this.parsePayload();
         this.parseFlags();
         this.parseId();
 
@@ -91,7 +94,7 @@ public class InternetProtocol extends Protocol {
     }
 
     private void parseLength() {
-        this.length = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 2, 4));        
+        this.length = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 2, 4));
     }
 
     public void parseProtocol() {
@@ -118,6 +121,7 @@ public class InternetProtocol extends Protocol {
 
     private void parsePayload() {
         /* offset = sizeof(word)=32 * nb words=(headersize) / sizeof(byte) */
+        this.payloadSize = this.length - (32 * this.headerSize) / 8;
         this.payload = Arrays.copyOfRange(this.data, (32 * this.headerSize) / 8, this.data.length);
     }
 
@@ -134,7 +138,7 @@ public class InternetProtocol extends Protocol {
     }
 
     public int getPayloadLength() {
-        return this.length - (this.headerSize * 4);
+        return this.payloadSize;
     }
 
     public byte[] getPayload() {
@@ -149,7 +153,7 @@ public class InternetProtocol extends Protocol {
         this.lastfragment = true;
     }
 
-    public String getsource() {
+    public String getSource() {
         return this.source;
     }
 
