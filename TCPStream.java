@@ -53,7 +53,7 @@ public class TCPStream {
         for(int i=0; i<this.tcppackets.size(); i++) {
             TransmissionControlProtocol tcp = this.tcppackets.get(i);
             if(tcp.getPayloadLength() != 0) {
-                if(tcp.getIp().getSource().equals(this.client_ip)) {
+                if(tcp.getIp().getSource().equals(this.client_ip) && tcp.getPortSrc() == this.client_port) {
                     this.client_to_server.add(tcp);
                 }
                 else {

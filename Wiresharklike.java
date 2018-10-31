@@ -43,7 +43,7 @@ public class Wiresharklike {
 
     private InputStream is;
     private GlobalHeader globalHeader;
-    private ArrayList<Packet> packets;
+    public static ArrayList<Packet> packets;
 
     private static final int globalHeaderSize = 24;
     private static final int packetHeaderSize = 16;
@@ -103,7 +103,7 @@ public class Wiresharklike {
             System.exit(-1);
         }
 
-        /* parsing packets */
+        /* parsing packets from pcap file */
         for(int i=0; i<packets.size(); i++) {
             packets.get(i).parse();
         }
@@ -240,6 +240,9 @@ public class Wiresharklike {
         else if(Arrays.equals(bytes, TransmissionControlProtocol.hexaValue)) {
             protocol = new TransmissionControlProtocol(packet);
         }
+        else if(Arrays.equals(bytes, UserDatagramProtocol.hexaValue)) {
+            protocol = new UserDatagramProtocol(packet);
+        }
         else if(Arrays.equals(bytes, InternetControlMessageProtocol.hexaValue)) {
             protocol = new InternetControlMessageProtocol(packet);
         }
@@ -255,7 +258,10 @@ public class Wiresharklike {
         String tmp = "";
         for(int i=0; i<bytes.length && i<100; i++) {
             tmp = String.format("%02X", bytes[i]);
-            result.append((char) Integer.parseInt(tmp, 16));
+            if(Integer.parseInt(tmp, 16) >= 32 && Integer.parseInt(tmp, 16) <= 126)
+                result.append((char) Integer.parseInt(tmp, 16));
+            else
+                result.append(".");
         }
         return result.toString();
     }

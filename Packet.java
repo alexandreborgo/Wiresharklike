@@ -22,13 +22,15 @@ public class Packet {
     public Packet(int uid, byte[] bytes) {
         this.uid = uid;
         this.header = bytes;
-        this.ts_sec = Arrays.copyOfRange(this.header, 0, 4);
-        this.ts_usec = Arrays.copyOfRange(this.header, 4, 8);
-        this.incl_len = Arrays.copyOfRange(this.header, 8, 12);
-        this.orig_len = Arrays.copyOfRange(this.header, 12, 16);
+        if(this.header != null) {
+            this.ts_sec = Arrays.copyOfRange(this.header, 0, 4);
+            this.ts_usec = Arrays.copyOfRange(this.header, 4, 8);
+            this.incl_len = Arrays.copyOfRange(this.header, 8, 12);
+            this.orig_len = Arrays.copyOfRange(this.header, 12, 16);
         
-        Wiresharklike.reverse(this.incl_len);
-        this.dataSize = Wiresharklike.bytesToInt(this.incl_len);
+            Wiresharklike.reverse(this.incl_len);
+            this.dataSize = Wiresharklike.bytesToInt(this.incl_len);
+        }
     }
 
     public int getDataSize() {
@@ -51,7 +53,14 @@ public class Packet {
     public void parse() {
         /* first protocol will always be ethernet (because it only has to support ethernet) */
         this.protocol = new EthernetProtocol(this, Arrays.copyOfRange(this.data, 0, this.data.length));
-        this.protocol.parse();        
+        this.protocol.parse();
+    }
+
+    public void parseIp() {
+        /* except when it is the payload of ICMP ttl exceeded or destination unreachable */ 
+        this.protocol = new InternetProtocol(this);
+        this.protocol.setData(this.data);
+        this.protocol.parse();
     }
 
     public void flow() {

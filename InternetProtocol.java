@@ -160,4 +160,8 @@ public class InternetProtocol extends Protocol {
     public String getDestination() {
         return this.destination;
     }
+
+    public int getId() {
+        return this.id;
+    }
 }

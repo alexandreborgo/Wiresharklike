@@ -7,8 +7,10 @@ public class Protocol {
 
     public Protocol(Packet packet, String name) {
         this.name = name;
-        this.packet = packet;
-        this.packet.protocols.add(this);
+        if(packet != null) {
+            this.packet = packet;
+            this.packet.protocols.add(this);
+        }
     }
 
     public Protocol(Packet packet, byte[] data, String name) {

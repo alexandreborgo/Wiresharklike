@@ -115,7 +115,6 @@ public class TransmissionControlProtocol extends Protocol {
         if(this.handshake && this.syn && this.ack) System.out.print("- HANDSHAKE SYN ACK");
         if(this.handshake && this.fin && this.ack) System.out.print("- HANDSHAKE FIN ACK");
         if(this.handshake && !this.syn && this.ack && !this.fin) System.out.print("- HANDSHAKE ACK");
-        if(this.handshake) System.out.print(" - HANDSHAKE");
         System.out.println("");
     }
 
