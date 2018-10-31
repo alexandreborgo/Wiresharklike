@@ -7,6 +7,7 @@ public class UserDatagramProtocol extends Protocol {
     private int source;
     private int destination;
     private int payloadSize;
+    private byte[] payload;
 
     private InternetProtocol ip;
 
@@ -25,7 +26,7 @@ public class UserDatagramProtocol extends Protocol {
     public void parse() {
         this.parseSource();
         this.parseDestination();
-        this.parsePayloadLength();
+        this.parsePayload();
     }
 
     private void parseSource() {
@@ -40,14 +41,16 @@ public class UserDatagramProtocol extends Protocol {
         this.protocol = new UnknownProtocol(this.packet);
     }
 
-    private void parsePayloadLength() {
+    private void parsePayload() {
         this.payloadSize = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 4, 6)) - 8;
+        this.payload = Arrays.copyOfRange(this.data, 8, this.data.length);
     }
 
     public void print() {
         super.print();
         System.out.print(this.source + " -> " + this.destination + " ");
-        System.out.print("len=" + this.payloadSize);
-        System.out.println("");
+        System.out.println("len=" + this.payloadSize);
+        System.out.print("Data: ");
+        System.out.print(Wiresharklike.byteToAscii(this.payload));
     }
 }

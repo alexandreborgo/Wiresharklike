@@ -6,9 +6,10 @@ public class TCPStream {
     private String[] ips;
     private int[] ports;
 
-    public ArrayList<TransmissionControlProtocol> tcppackets =  new ArrayList<TransmissionControlProtocol>();
-    public ArrayList<TransmissionControlProtocol> client_to_server =  new ArrayList<TransmissionControlProtocol>();
-    public ArrayList<TransmissionControlProtocol> server_to_client =  new ArrayList<TransmissionControlProtocol>();
+    public ArrayList<TransmissionControlProtocol> tcppackets = new ArrayList<TransmissionControlProtocol>();
+    //public ArrayList<TransmissionControlProtocol> client_to_server = new ArrayList<TransmissionControlProtocol>();
+    //public ArrayList<TransmissionControlProtocol> server_to_client = new ArrayList<TransmissionControlProtocol>();
+    public ArrayList<ArrayList<TransmissionControlProtocol>> stream = new ArrayList<ArrayList<TransmissionControlProtocol>>();
 
     private String client_ip;
     private String server_ip;
@@ -50,20 +51,71 @@ public class TCPStream {
 
     public void analyse() {
         this.findHandshake();
+        System.out.println(this.client_ip + ":" + this.client_port);
+        System.out.println(this.server_ip + ":" + this.server_port);
+        int streamno = -1;
+        boolean reply = false;
         for(int i=0; i<this.tcppackets.size(); i++) {
             TransmissionControlProtocol tcp = this.tcppackets.get(i);
             if(tcp.getPayloadLength() != 0) {
+                if(streamno == -1) {
+                    if(tcp.getIp().getSource().equals(this.client_ip) && tcp.getPortSrc() == this.client_port) reply = false;
+                    else reply = true;
+                }
                 if(tcp.getIp().getSource().equals(this.client_ip) && tcp.getPortSrc() == this.client_port) {
-                    this.client_to_server.add(tcp);
+                    if(reply == false) {
+                        streamno++;
+                        reply = true;
+                        this.stream.add(new ArrayList<TransmissionControlProtocol>());
+                    }
+                    // this.client_to_server.add(tcp);
                 }
                 else {
-                    this.server_to_client.add(tcp);
+                    if(reply == true) {
+                        streamno++;
+                        reply = false;
+                        this.stream.add(new ArrayList<TransmissionControlProtocol>());
+                    }
+                    // this.server_to_client.add(tcp);
+                }
+                this.stream.get(streamno).add(tcp);
+            }
+            else {
+                for(TransmissionControlProtocol tcp2 : this.tcppackets) {
+                    if(tcp2.getSequence() == tcp.getAcknowledgment()-1 || tcp2.getSequence() == tcp.getAcknowledgment()-tcp2.getPayloadLength()) {
+                        tcp.setAckof(tcp2.getPacket().getUid());
+                        break;
+                    }
                 }
             }
         }
 
-        System.out.println("client to server: " + this.client_to_server.size());
-        System.out.println("server to client: " + this.server_to_client.size());
+        // reassemble
+        for(int i=0; i<this.stream.size(); i++) {
+            if(this.stream.get(i).size() > 1) {
+                // calculate total length of the TCP payload
+                int size = 0;
+                for(TransmissionControlProtocol tcp : this.stream.get(i)) {
+                    size += tcp.getPayloadLength();
+                    tcp.setSegment();
+                    tcp.setReassembledPacket(this.stream.get(i).get(this.stream.get(i).size() - 1).getPacket().getUid());
+                }
+                byte[] data = new byte[size];
+                int offset = 0;
+                // reassemble the data
+                for(TransmissionControlProtocol tcp : this.stream.get(i)) {
+                    byte[] tmp = tcp.getPayload();
+                    for(int j = 0; j<tmp.length; j++) {
+                        data[offset++] = tmp[j];
+                    }            
+                }
+                // add the final payload to the last package and parse it
+                this.stream.get(i).get(this.stream.get(i).size() - 1).setPayload(data);
+                this.stream.get(i).get(this.stream.get(i).size() - 1).setLastSegment();
+                //this.rebuildpacketid = this.fragments.get(this.fragments.size() - 1).getPacket().getUid();
+            }
+            this.stream.get(i).get(this.stream.get(i).size() - 1).parseProtocol();
+        }
     }
 
     private void findHandshake() {
@@ -86,6 +138,14 @@ public class TCPStream {
                     tcp.setHandshake();
                 }
             }
+        }
+
+        if(this.client_ip == null && this.client_port == 0 && this.server_ip == null && this.server_port == 0) {
+            TransmissionControlProtocol tcp = this.tcppackets.get(0);
+            this.client_ip = tcp.getIp().getSource();
+            this.server_ip = tcp.getIp().getDestination();
+            this.client_port = tcp.getPortSrc();
+            this.server_port = tcp.getPortDst();
         }
     }
 }

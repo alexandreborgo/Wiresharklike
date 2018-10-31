@@ -10,6 +10,7 @@ public class IPFragmentsGroup {
     public String source = "";
     public String destination = "";
     public ArrayList<InternetProtocol> fragments =  new ArrayList<InternetProtocol>();
+    public String fragmentsids = "";
     public int rebuildpacketid = -1;
     
     public IPFragmentsGroup(int id, String source, String destination) {
@@ -46,11 +47,13 @@ public class IPFragmentsGroup {
         int offset = 0;
 
         for(InternetProtocol ip : this.fragments) {
+            this.fragmentsids += ip.packet.getUid() + ", ";
             byte[] tmp = ip.getPayload();
             for(int i = 0; i<tmp.length; i++) {
                 data[offset++] = tmp[i];
             }            
         }
+        this.fragmentsids = this.fragmentsids.substring(0, this.fragmentsids.length() - 2);
 
         // add the final payload to the last package and parse it
         this.fragments.get(this.fragments.size() - 1).setPayload(data);

@@ -256,10 +256,16 @@ public class Wiresharklike {
     public static String byteToAscii(byte[] bytes) {
         StringBuilder result = new StringBuilder();
         String tmp = "";
-        for(int i=0; i<bytes.length && i<100; i++) {
+        for(int i=0; i<bytes.length; i++) {
             tmp = String.format("%02X", bytes[i]);
             if(Integer.parseInt(tmp, 16) >= 32 && Integer.parseInt(tmp, 16) <= 126)
                 result.append((char) Integer.parseInt(tmp, 16));
+            else if(Integer.parseInt(tmp, 16) == 10)
+                result.append("\n");
+            else if(Integer.parseInt(tmp, 16) == 9)
+                result.append("\t");
+            else if(Integer.parseInt(tmp, 16) == 13)
+                result.append("");
             else
                 result.append(".");
         }

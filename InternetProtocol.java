@@ -129,7 +129,10 @@ public class InternetProtocol extends Protocol {
         super.print();
         System.out.println(this.source + " -> " + this.destination);
         if(this.fragment) {
-            System.out.println("IP Fragment, rebuilt in [" + this.ipfraggroup.rebuildpacketid + "] (id=" + this.id + ", offset=" + this.offset + ").");
+            if(this.ipfraggroup.rebuildpacketid != this.packet.getUid())
+                System.out.println("IP Fragment, reassembled in [" + this.ipfraggroup.rebuildpacketid + "] (id=" + this.id + ", offset=" + this.offset + ").");
+            else 
+                System.out.println("Reassembled from fragments: [" + this.ipfraggroup.fragmentsids + "] (id=" + this.id + ", offset=" + this.offset + ").");
         }
     }
 

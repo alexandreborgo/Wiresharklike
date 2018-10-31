@@ -20,7 +20,7 @@ public class EthernetProtocol extends Protocol {
 
     public void parse() {
         this.parseDestination();
-        this.parseSource();
+        this.parseSource();      
         this.parseProtocol();
     }
 

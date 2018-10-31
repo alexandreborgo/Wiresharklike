@@ -8,6 +8,7 @@ public class TransmissionControlProtocol extends Protocol {
     private int destination;
     private int headerSize;
     private int payloadSize;
+    private byte[] payload;
 
     private boolean syn = false;
     private boolean ack = false;
@@ -19,6 +20,12 @@ public class TransmissionControlProtocol extends Protocol {
     private boolean congest = false;
     private boolean nonce = false;
     private boolean handshake = false;
+
+    private boolean segment = false;
+    private boolean lastsegment = false;
+    private int reassembledpacket;
+
+    private int ackof = -1;
 
     private long sequence;
     private long acknowledgment;
@@ -46,7 +53,7 @@ public class TransmissionControlProtocol extends Protocol {
         this.parseAcknowledgment();
         this.parseSequence();
         this.parseHeaderSize();
-        this.parsePayloadLength();
+        this.parsePayload();
         
         TCPStream ts = Wiresharklike.findTCPStream(this.ip.getSource(), this.ip.getDestination(), this.source, this.destination);
         if(ts == null) {
@@ -67,7 +74,7 @@ public class TransmissionControlProtocol extends Protocol {
         this.destination = Wiresharklike.bytesToInt(Arrays.copyOfRange(this.data, 2, 4));
     }
 
-    private void parseProtocol() {
+    public void parseProtocol() {
         this.protocol = new UnknownProtocol(this.packet);
     }
 
@@ -94,9 +101,10 @@ public class TransmissionControlProtocol extends Protocol {
         this.acknowledgment = Wiresharklike.bytesToLong(Arrays.copyOfRange(this.data, 8, 12));
     }
 
-    private void parsePayloadLength() {
+    private void parsePayload() {
         /* IP payload size - TCP header size */
         this.payloadSize = this.ip.getPayloadLength() - this.headerSize;
+        this.payload = Arrays.copyOfRange(this.data, this.data.length-this.payloadSize, this.data.length);
     }
 
     private void parseHeaderSize() {
@@ -115,6 +123,15 @@ public class TransmissionControlProtocol extends Protocol {
         if(this.handshake && this.syn && this.ack) System.out.print("- HANDSHAKE SYN ACK");
         if(this.handshake && this.fin && this.ack) System.out.print("- HANDSHAKE FIN ACK");
         if(this.handshake && !this.syn && this.ack && !this.fin) System.out.print("- HANDSHAKE ACK");
+        System.out.println("");
+        if(this.segment)
+            System.out.println("TCP segments reassembled in [" + this.reassembledpacket + "]");
+        if(this.ack && this.ackof != -1)
+            System.out.println("TCP acknoledgment of [" + this.ackof + "]");
+        if(this.payloadSize > 0 && (!this.segment || this.lastsegment)) { 
+            System.out.print("Data: ");
+            System.out.print(Wiresharklike.byteToAscii(this.payload));
+        }
         System.out.println("");
     }
 
@@ -155,5 +172,29 @@ public class TransmissionControlProtocol extends Protocol {
 
     public int getPayloadLength() {
         return this.payloadSize;
+    }
+
+    public byte[] getPayload() {
+        return this.payload;
+    }
+
+    public void setPayload(byte[] payload) {
+        this.payload = payload;
+    }
+
+    public void setSegment() {
+        this.segment = true;
+    }
+
+    public void setLastSegment() {
+        this.lastsegment = true;
+    }
+
+    public void setReassembledPacket(int reassembledpacket) {
+        this.reassembledpacket = reassembledpacket;
+    }
+
+    public void setAckof(int packet) {
+        this.ackof = packet;
     }
 }
