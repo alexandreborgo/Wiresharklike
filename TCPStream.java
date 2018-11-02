@@ -51,8 +51,6 @@ public class TCPStream {
 
     public void analyse() {
         this.findHandshake();
-        System.out.println(this.client_ip + ":" + this.client_port);
-        System.out.println(this.server_ip + ":" + this.server_port);
         int streamno = -1;
         boolean reply = false;
         for(int i=0; i<this.tcppackets.size(); i++) {

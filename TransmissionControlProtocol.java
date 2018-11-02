@@ -75,7 +75,9 @@ public class TransmissionControlProtocol extends Protocol {
     }
 
     public void parseProtocol() {
-        this.protocol = new UnknownProtocol(this.packet);
+        ProtocolAnalysis pa = new ProtocolAnalysis(this.packet, this.source, this.destination, this.payload);
+        this.protocol = pa.analysis();
+        this.protocol.parse();
     }
 
     private void parseFlags() {
@@ -128,11 +130,10 @@ public class TransmissionControlProtocol extends Protocol {
             System.out.println("TCP segments reassembled in [" + this.reassembledpacket + "]");
         if(this.ack && this.ackof != -1)
             System.out.println("TCP acknoledgment of [" + this.ackof + "]");
-        if(this.payloadSize > 0 && (!this.segment || this.lastsegment)) { 
+        if(this.payloadSize > 0 && this.protocol instanceof UnknownProtocol) {
             System.out.print("Data: ");
             System.out.print(Wiresharklike.byteToAscii(this.payload));
         }
-        System.out.println("");
     }
 
     public boolean getSyn() {
