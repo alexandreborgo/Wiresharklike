@@ -24,11 +24,21 @@ public class ProtocolAnalysis {
                 protocol = new HypertextTransferProtocol(this.packet, this.data);
             }
         }
+        else {
+            protocol = this.tryALL();
+        }
         
         if(protocol == null) {
             protocol = new UnknownProtocol(this.packet);
         }
         return protocol;
+    }
+
+    public Protocol tryALL() {
+        if(this.tryHTTP()) {
+           return new HypertextTransferProtocol(this.packet, this.data);
+        }
+        return null;
     }
 
     public boolean tryHTTP() {

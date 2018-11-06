@@ -65,16 +65,16 @@ public class Wiresharklike {
 
     public void readPackets() {
         try {
-            this.packets = new ArrayList<Packet>();
+            Wiresharklike.packets = new ArrayList<Packet>();
             byte[] packetHeaderBuffer = new byte[Wiresharklike.packetHeaderSize];
             Packet packet;
             byte[] packetDataBuffer;
             while(this.is.read(packetHeaderBuffer) == Wiresharklike.packetHeaderSize) {
-                packet = new Packet(this.packets.size(), packetHeaderBuffer);
+                packet = new Packet(Wiresharklike.packets.size(), packetHeaderBuffer);
                 packetDataBuffer = new byte[packet.getDataSize()];
                 this.is.read(packetDataBuffer);
                 packet.setData(packetDataBuffer);
-                this.packets.add(packet);
+                Wiresharklike.packets.add(packet);
             }
         } catch (IOException exception) {
             exception.printStackTrace();
@@ -129,6 +129,13 @@ public class Wiresharklike {
             System.out.println("No pcap file given.");
             System.exit(-1);
         }
+        if(args.length > 1) {
+            System.out.println(args.length);
+            for(int i=1; i<args.length - 1; i+=2) {
+                System.out.println(args[i] + " " + args[i+1]);
+            }
+        }
+        System.exit(0);
         new Wiresharklike(args[0]);        
     }
 
