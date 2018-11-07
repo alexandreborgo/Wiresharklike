@@ -8,6 +8,43 @@ import java.io.IOException;
 
 public class Wiresharklike {
 
+    public static boolean mac = false;
+    public String v_mac = ""; 
+    public static boolean mac_src = false;
+    public String v_mac_src = ""; 
+    public static boolean mac_dst = false;
+    public String v_mac_dst = ""; 
+    public static boolean ip_addr = false;
+    public String v_ip_addr = ""; 
+    public static boolean ip_src = false;
+    public String v_ip_src = ""; 
+    public static boolean ip_dst = false;
+    public String v_ip_dst = ""; 
+    public static boolean port = false;
+    public String v_port = ""; 
+    public static boolean post_src = false;
+    public String v_post_src = ""; 
+    public static boolean port_dst = false;
+    public String v_port_dst = ""; 
+    public static boolean tcp = false;
+    public String v_tcp = ""; 
+    public static boolean udp = false;
+    public String v_udp = ""; 
+    public static boolean http = false;
+    public String v_http = ""; 
+    public static boolean dhcp = false;
+    public String v_dhcp = ""; 
+    public static boolean arp = false;
+    public String v_arp = ""; 
+    public static boolean ethernet = false;
+    public String v_ethernet = ""; 
+    public static boolean icmp = false;
+    public String v_icmp = ""; 
+    public static boolean ip = false;
+    public String v_ip = ""; 
+
+    private String pcap;
+
     public static ArrayList<IPFragmentsGroup> ipfraggroup = new ArrayList<IPFragmentsGroup>();
 
     public static IPFragmentsGroup findIpFragmentsGroup(int id, String source, String destination) {
@@ -85,16 +122,19 @@ public class Wiresharklike {
     public Wiresharklike(String pcap) {
         try {
             this.is = new FileInputStream(pcap);
+            this.pcap = pcap;
         } catch(FileNotFoundException exception) {
             System.out.println("Pcap file not found.");
             exception.printStackTrace();
             System.exit(-1);
         }
+    }
 
+    public void run() {
         this.readGlobalHeader();
         this.readPackets();
 
-        System.out.println("File: " + pcap + ", " + packets.size() + " packets found.\n");
+        System.out.println("File: " + this.pcap + ", " + packets.size() + " packets found.\n");
         
         try {
             is.close();
@@ -120,6 +160,16 @@ public class Wiresharklike {
 
         /* print */
         for(int i=0; i<packets.size(); i++) {
+            for(Object obj : Wiresharklike.packets.get(i).protocols) {
+                if(obj.getClass() == InternetProtocol.class) {
+                    InternetProtocol ip = (InternetProtocol) obj;
+                    System.out.println("ip source");
+                    System.out.println("ip source" + ip.source);
+                }
+                else {
+                    System.out.println(obj.getClass());
+                }
+            }
             packets.get(i).print();
         }
     }
@@ -129,14 +179,66 @@ public class Wiresharklike {
             System.out.println("No pcap file given.");
             System.exit(-1);
         }
+        
+        Wiresharklike wiresharklike = new Wiresharklike(args[0]); 
+
         if(args.length > 1) {
-            System.out.println(args.length);
             for(int i=1; i<args.length - 1; i+=2) {
-                System.out.println(args[i] + " " + args[i+1]);
+                Wiresharklike.parseArgs(args[i], args[i+1]);
             }
         }
-        System.exit(0);
-        new Wiresharklike(args[0]);        
+        
+        wiresharklike.run();
+    }
+
+    public static void parseArgs(String key, String value) {
+        switch(key) {
+            case "mac":
+            Wiresharklike.mac = true;
+            break;
+            case "mac.src":
+            Wiresharklike.mac_src = true;
+            break;
+            case "mac.dst":
+            Wiresharklike.mac_dst = true;
+            break;
+            case "ip.addr":
+            Wiresharklike.ip_addr = true;
+            break;
+            case "ip.src":
+            Wiresharklike.ip_src = true;
+            break;
+            case "ip.dst":
+            Wiresharklike.ip_dst = true;
+            break;
+            case "port":
+            Wiresharklike.port = true;
+            break;
+            case "port.src":
+            Wiresharklike.post_src = true;
+            break;
+            case "port.dst":
+            Wiresharklike.port_dst = true;
+            break;
+            case "tcp":
+            Wiresharklike.tcp = true;
+            break;
+            case "udp":
+            Wiresharklike.udp = true;
+            break;
+            case "http":
+            Wiresharklike.http = true;
+            break;
+            case "dhcp":
+            Wiresharklike.dhcp = true;
+            break;
+            case "arp":
+            Wiresharklike.arp = true;
+            break;
+            case "icmp":
+            Wiresharklike.icmp = true;
+            break;
+        }
     }
 
     /* util functions */

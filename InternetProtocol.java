@@ -5,8 +5,8 @@ public class InternetProtocol extends Protocol {
 
     private int length;
     private Protocol protocol = null;
-    private String source = "";
-    private String destination = "";
+    public String source = "";
+    public String destination = "";
     private int headerSize;
     private int payloadSize;
     private int version;

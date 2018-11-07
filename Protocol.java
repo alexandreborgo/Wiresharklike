@@ -28,6 +28,10 @@ public class Protocol {
         System.out.print(this.name + ": ");
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     public Packet getPacket() {
         return this.packet;
     }
