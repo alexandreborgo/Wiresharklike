@@ -29,8 +29,9 @@ public class ProtocolAnalysis {
         }
         
         if(protocol == null) {
-            protocol = new UnknownProtocol(this.packet);
+            protocol = this.tryALL();
         }
+        
         return protocol;
     }
 
@@ -38,7 +39,7 @@ public class ProtocolAnalysis {
         if(this.tryHTTP()) {
            return new HypertextTransferProtocol(this.packet, this.data);
         }
-        return null;
+        return new UnknownProtocol(this.packet);
     }
 
     public boolean tryHTTP() {

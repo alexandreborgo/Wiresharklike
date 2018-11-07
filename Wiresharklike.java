@@ -8,40 +8,41 @@ import java.io.IOException;
 
 public class Wiresharklike {
 
-    public static boolean mac = false;
-    public String v_mac = ""; 
+    public static boolean filter = false;
+    public static boolean mac_addr = false;
+    public static String v_mac = ""; 
     public static boolean mac_src = false;
-    public String v_mac_src = ""; 
+    public static String v_mac_src = ""; 
     public static boolean mac_dst = false;
-    public String v_mac_dst = ""; 
+    public static String v_mac_dst = ""; 
     public static boolean ip_addr = false;
-    public String v_ip_addr = ""; 
+    public static String v_ip_addr = ""; 
     public static boolean ip_src = false;
-    public String v_ip_src = ""; 
+    public static String v_ip_src = ""; 
     public static boolean ip_dst = false;
-    public String v_ip_dst = ""; 
+    public static String v_ip_dst = ""; 
     public static boolean port = false;
-    public String v_port = ""; 
-    public static boolean post_src = false;
-    public String v_post_src = ""; 
+    public static String v_port = ""; 
+    public static boolean port_src = false;
+    public static String v_port_src = ""; 
     public static boolean port_dst = false;
-    public String v_port_dst = ""; 
+    public static String v_port_dst = ""; 
     public static boolean tcp = false;
-    public String v_tcp = ""; 
+    public static String v_tcp = ""; 
     public static boolean udp = false;
-    public String v_udp = ""; 
+    public static String v_udp = ""; 
     public static boolean http = false;
-    public String v_http = ""; 
+    public static String v_http = ""; 
     public static boolean dhcp = false;
-    public String v_dhcp = ""; 
+    public static String v_dhcp = ""; 
     public static boolean arp = false;
-    public String v_arp = ""; 
+    public static String v_arp = ""; 
     public static boolean ethernet = false;
-    public String v_ethernet = ""; 
+    public static String v_ethernet = ""; 
     public static boolean icmp = false;
-    public String v_icmp = ""; 
+    public static String v_icmp = ""; 
     public static boolean ip = false;
-    public String v_ip = ""; 
+    public static String v_ip = ""; 
 
     private String pcap;
 
@@ -160,18 +161,177 @@ public class Wiresharklike {
 
         /* print */
         for(int i=0; i<packets.size(); i++) {
-            for(Object obj : Wiresharklike.packets.get(i).protocols) {
-                if(obj.getClass() == InternetProtocol.class) {
-                    InternetProtocol ip = (InternetProtocol) obj;
-                    System.out.println("ip source");
-                    System.out.println("ip source" + ip.source);
-                }
-                else {
-                    System.out.println(obj.getClass());
+            if(Wiresharklike.filter) {
+                if(Wiresharklike.filter(i)) {
+                    packets.get(i).print();
                 }
             }
-            packets.get(i).print();
+            else {
+                packets.get(i).print();
+            }
         }
+    }
+
+    public static boolean filter(int i) {
+        // check for protocol
+        if(Wiresharklike.arp == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == AddressResolutionProtocol.class) {
+                    return true;
+                }
+            }
+        }
+        else if(Wiresharklike.icmp == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == InternetControlMessageProtocol.class) {
+                    return true;
+                }
+            }
+        }
+        else if(Wiresharklike.ip == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == InternetProtocol.class) {
+                    return true;
+                }
+            }
+        }
+        else if(Wiresharklike.tcp == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == TransmissionControlProtocol.class) {
+                    return true;
+                }
+            }
+        }
+        else if(Wiresharklike.udp == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == UserDatagramProtocol.class) {
+                    return true;
+                }
+            }
+        }
+        else if(Wiresharklike.http == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == HypertextTransferProtocol.class) {
+                    return true;
+                }
+            }
+        }
+
+        // check mac addr
+        if(Wiresharklike.mac_addr == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == EthernetProtocol.class) {
+                    EthernetProtocol eth = (EthernetProtocol) p;
+                    if(eth.source.equals(Wiresharklike.v_mac) || eth.destination.equals(Wiresharklike.v_mac)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if(Wiresharklike.mac_src == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == EthernetProtocol.class) {
+                    EthernetProtocol eth = (EthernetProtocol) p;
+                    if(eth.source.equals(Wiresharklike.v_mac_src)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if(Wiresharklike.mac_dst == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == EthernetProtocol.class) {
+                    EthernetProtocol eth = (EthernetProtocol) p;
+                    if(eth.destination.equals(Wiresharklike.v_mac_dst)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // check ip addr 
+        if(Wiresharklike.ip_addr == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == InternetProtocol.class) {
+                    InternetProtocol ip = (InternetProtocol) p;
+                    if(ip.source.equals(Wiresharklike.v_ip) || ip.destination.equals(Wiresharklike.v_ip)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if(Wiresharklike.ip_src == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == InternetProtocol.class) {
+                    InternetProtocol ip = (InternetProtocol) p;
+                    if(ip.source.equals(Wiresharklike.v_ip_src)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if(Wiresharklike.ip_dst == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == InternetProtocol.class) {
+                    InternetProtocol ip = (InternetProtocol) p;
+                    if(ip.destination.equals(Wiresharklike.v_ip_dst)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        // check tcp or udp port
+        if(Wiresharklike.port == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == TransmissionControlProtocol.class) {
+                    TransmissionControlProtocol tcp = (TransmissionControlProtocol) p;
+                    if(tcp.source == Integer.parseInt(Wiresharklike.v_port) || tcp.destination == Integer.parseInt(Wiresharklike.v_port)) {
+                        return true;
+                    }
+                }
+                else if(p.getClass() == UserDatagramProtocol.class) {
+                    UserDatagramProtocol udp = (UserDatagramProtocol) p;
+                    if(udp.source == Integer.parseInt(Wiresharklike.v_port) || udp.destination == Integer.parseInt(Wiresharklike.v_port)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if(Wiresharklike.port_src == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == TransmissionControlProtocol.class) {
+                    TransmissionControlProtocol tcp = (TransmissionControlProtocol) p;
+                    if(tcp.source == Integer.parseInt(Wiresharklike.v_port_src)) {
+                        return true;
+                    }
+                }
+                else if(p.getClass() == UserDatagramProtocol.class) {
+                    UserDatagramProtocol udp = (UserDatagramProtocol) p;
+                    if(udp.source == Integer.parseInt(Wiresharklike.v_port_src)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if(Wiresharklike.port_dst == true) {
+            for(Protocol p : Wiresharklike.packets.get(i).protocols) {
+                if(p.getClass() == TransmissionControlProtocol.class) {
+                    TransmissionControlProtocol tcp = (TransmissionControlProtocol) p;
+                    if(tcp.destination == Integer.parseInt(Wiresharklike.v_port_dst)) {
+                        return true;
+                    }
+                }
+                else if(p.getClass() == UserDatagramProtocol.class) {
+                    UserDatagramProtocol udp = (UserDatagramProtocol) p;
+                    if(udp.destination == Integer.parseInt(Wiresharklike.v_port_dst)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
 
     public static void main(String[] args) {
@@ -182,10 +342,15 @@ public class Wiresharklike {
         
         Wiresharklike wiresharklike = new Wiresharklike(args[0]); 
 
-        if(args.length > 1) {
-            for(int i=1; i<args.length - 1; i+=2) {
-                Wiresharklike.parseArgs(args[i], args[i+1]);
+        try {
+            if(args.length > 1) {
+                for(int i=1; i<args.length - 1; i+=2) {
+                    Wiresharklike.parseArgs(args[i], args[i+1]);
+                }
+                Wiresharklike.filter = true;
             }
+        } catch(ArrayIndexOutOfBoundsException exception) {
+            System.out.println("Not enougth argument.");
         }
         
         wiresharklike.run();
@@ -193,50 +358,63 @@ public class Wiresharklike {
 
     public static void parseArgs(String key, String value) {
         switch(key) {
-            case "mac":
-            Wiresharklike.mac = true;
+            case "mac.addr":
+            Wiresharklike.mac_addr = true;
+            Wiresharklike.v_mac = value;
             break;
             case "mac.src":
             Wiresharklike.mac_src = true;
+            Wiresharklike.v_mac_src = value;
             break;
             case "mac.dst":
             Wiresharklike.mac_dst = true;
+            Wiresharklike.v_mac_dst = value;
             break;
             case "ip.addr":
             Wiresharklike.ip_addr = true;
+            Wiresharklike.v_ip = value;
             break;
             case "ip.src":
             Wiresharklike.ip_src = true;
+            Wiresharklike.v_ip_src = value;
             break;
             case "ip.dst":
             Wiresharklike.ip_dst = true;
+            Wiresharklike.v_ip_dst = value;
             break;
             case "port":
             Wiresharklike.port = true;
+            Wiresharklike.v_port = value;
             break;
             case "port.src":
-            Wiresharklike.post_src = true;
+            Wiresharklike.port_src = true;
+            Wiresharklike.v_port_src = value;
             break;
             case "port.dst":
             Wiresharklike.port_dst = true;
-            break;
-            case "tcp":
-            Wiresharklike.tcp = true;
-            break;
-            case "udp":
-            Wiresharklike.udp = true;
-            break;
-            case "http":
-            Wiresharklike.http = true;
-            break;
-            case "dhcp":
-            Wiresharklike.dhcp = true;
-            break;
-            case "arp":
-            Wiresharklike.arp = true;
-            break;
-            case "icmp":
-            Wiresharklike.icmp = true;
+            Wiresharklike.v_port_dst = value;
+            break;            
+            case "proto":
+                switch(value) {
+                    case "tcp":
+                    Wiresharklike.tcp = true;
+                    break;
+                    case "udp":
+                    Wiresharklike.udp = true;
+                    break;
+                    case "http":
+                    Wiresharklike.http = true;
+                    break;
+                    case "dhcp":
+                    Wiresharklike.dhcp = true;
+                    break;
+                    case "arp":
+                    Wiresharklike.arp = true;
+                    break;
+                    case "icmp":
+                    Wiresharklike.icmp = true;
+                    break;
+                }
             break;
         }
     }

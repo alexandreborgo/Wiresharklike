@@ -4,8 +4,8 @@ import java.util.Arrays;
 public class TransmissionControlProtocol extends Protocol {
 
     private Protocol protocol;
-    private int source;
-    private int destination;
+    public int source;
+    public int destination;
     private int headerSize;
     private int payloadSize;
     private byte[] payload;

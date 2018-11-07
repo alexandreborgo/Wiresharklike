@@ -4,8 +4,8 @@ import java.util.Arrays;
 public class UserDatagramProtocol extends Protocol {
 
     private Protocol protocol;
-    private int source;
-    private int destination;
+    public int source;
+    public int destination;
     private int payloadSize;
     private byte[] payload;
 
@@ -27,6 +27,7 @@ public class UserDatagramProtocol extends Protocol {
         this.parseSource();
         this.parseDestination();
         this.parsePayload();
+        this.parseProtocol();
     }
 
     private void parseSource() {
@@ -38,7 +39,9 @@ public class UserDatagramProtocol extends Protocol {
     }
 
     private void parseProtocol() {
-        this.protocol = new UnknownProtocol(this.packet);
+        ProtocolAnalysis pa = new ProtocolAnalysis(this.packet, this.source, this.destination, this.payload);
+        this.protocol = pa.analysis();
+        this.protocol.parse();
     }
 
     private void parsePayload() {
